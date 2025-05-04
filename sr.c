@@ -153,8 +153,9 @@ void A_timerinterrupt(void)
     printf("----A: time out,resend packets!\n");
 
 /* Only retransmit the specific packets that have timed out or at the very left.*/
-    
-  tolayer3(A,buffer[(windowfirst) % WINDOWSIZE]);
+  if (TRACE > 0)
+    printf("----A: resending packet %d\n",buffer[windowfirst].seqnum);
+  tolayer3(A,buffer[windowfirst]);
   packets_resent++;
 
   if (windowcount > 0) 
