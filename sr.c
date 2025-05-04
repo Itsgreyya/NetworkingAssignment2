@@ -120,38 +120,34 @@ void A_output(struct msg message)
 
 void A_input(struct pkt packet)
 {
-  int ackcount = 0
-  int i
+  int ackcount = 0;
+  int i;
 
+  /* if received ACK is not corrupted */
   if (!IsCorrupted(packet)) {
-    int acknum = packet.acknum;
-
-    if (!acked[acknum]) {
-      acked[acknum] = true; // prove ack is received
-      if (TRACE > 0)
-        printf("----A: ACK %d received and marked\n", acknum);
-      total_ACKs_received++;
-
-      //stop timer
-    if(acknum == buffer[windowfirst].sequence){
-      while (windowcount > 0 && acked[buffer[windowfirst].seqnum])
-      {
-        windowfirst = (windowfirst + 1) % WINDOWSIZE;
-        windowcount--
-      }
-	    /* start timer again if there are still more unacked packets in window */
-      stoptimer(A);
-      if (windowcount > 0)
-        starttimer(A, RTT);
-    }
-    
-    }
-  } else {
     if (TRACE > 0)
-      printf("----A: Corrupted ACK received, ignored\n");
-  }
-}
+      printf("----A: uncorrupted ACK %d is received\n",packet.acknum);
+    total_ACKs_received++;
 
+    if(!acked[packet.acknum]){
+      if (TRACE > 0)
+        printf("----A: ACK %d is not a duplicate\n",packet.acknum);
+      new_ACKs++;
+      acked[packet.acknum] = true
+    }
+
+    if (packet.acknum == buffer [windowfirst].sequm){
+      while(windowcount > 0 && acked[buffer[windowfirst].seqnum]){
+        windowfirst = (windowfirst + 1) % WINDOWSIZE;
+        windowcount--;
+      }
+    }
+    else if (TRACE > 0)
+      printf ("----A: duplicate ACK received, do nothing!\n");
+  }
+  else if (TRACE > 0)
+    printf ("----A: corrupted ACK is received, do nothing!\n");
+}
 
 /* called when A's timer goes off */
 void A_timerinterrupt(void)
@@ -241,7 +237,6 @@ void B_input(struct pkt packet)
 void B_init(void)
 {
   expectedseqnum = 0;
-  B_nextseqnum = 1;
 }
 
 /******************************************************************************
