@@ -34,7 +34,7 @@
    the packet is corrupted.
 */ 
 
-//this part dont need to change whether use go back N or selective repeat method
+/*this part dont need to change whether use go back N or selective repeat method*/
 
 int ComputeChecksum(struct pkt packet)
 {
@@ -57,7 +57,6 @@ bool IsCorrupted(struct pkt packet)
     return (true);
 }
 
-// End here 
 
 /********* Sender (A) variables and functions ************/
 
@@ -116,7 +115,7 @@ void A_output(struct msg message)
    In this practical this will always be an ACK as B never sends data.
 */
 
-//apply sr insead of gbn for A_input
+/*apply sr insead of gbn for A_input*/
 
 void A_input(struct pkt packet)
 {
@@ -133,7 +132,7 @@ void A_input(struct pkt packet)
       if (TRACE > 0)
         printf("----A: ACK %d is not a duplicate\n",packet.acknum);
       new_ACKs++;
-      acked[packet.acknum] = true
+      acked[packet.acknum] = true;
     }
 
     if (packet.acknum == buffer [windowfirst].sequm){
@@ -156,7 +155,7 @@ void A_timerinterrupt(void)
   if (TRACE > 0)
     printf("----A: time out,resend packets!\n");
 
-// Only retransmit the specific packets that have timed out or at the very left.
+/* Only retransmit the specific packets that have timed out or at the very left.*/
     
   tolayer3(A,buffer[(windowfirst) % WINDOWSIZE]);
   packets_resent++;
@@ -205,7 +204,7 @@ void B_input(struct pkt packet)
     packets_received++;
 
     if (received[packet.sequm] == false){
-      received[packet.sequm] ==true
+      received[packet.sequm] ==true;
       for ( i=0; i<20 ; i++ )
         recvpkt[packet.sequm].payload[i] = packet.payload[i];
     }
