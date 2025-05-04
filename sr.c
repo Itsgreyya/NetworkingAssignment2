@@ -123,7 +123,6 @@ void A_input(struct pkt packet)
   if (!IsCorrupted(packet)) {
     if (TRACE > 0)
       printf("----A: uncorrupted ACK %d is received\n",packet.acknum);
-    total_ACKs_received++;
 
     if(!acked[packet.acknum]){
       if (TRACE > 0)
@@ -137,6 +136,10 @@ void A_input(struct pkt packet)
         windowfirst = (windowfirst + 1) % WINDOWSIZE;
         windowcount--;
       }
+
+      stoptimer(A);
+      if (windowcount > 0 )
+        starttimer(A, RTT);
     }
     else if (TRACE > 0)
       printf ("----A: duplicate ACK received, do nothing!\n");
@@ -154,7 +157,7 @@ void A_timerinterrupt(void)
 
 /* Only retransmit the specific packets that have timed out or at the very left.*/
   if (TRACE > 0)
-    printf("----A: resending packet %d\n",buffer[windowfirst].seqnum);
+    printf ("---A: resending packet %d\n", (buffer[windowfirst]).seqnum);
   tolayer3(A,buffer[windowfirst]);
   packets_resent++;
 
@@ -184,7 +187,7 @@ void A_init(void)
 /********* Receiver (B)  variables and procedures ************/
 
 static int expectedseqnum; /* the sequence number expected next by the receiver */
-static struct pkt recvpkt[SEQSPACE];
+static struct pkt received_pkt[SEQSPACE];
 static bool received[SEQSPACE];
 
 /* called from layer 3, when a packet arrives for layer 4 at B*/
@@ -203,7 +206,7 @@ void B_input(struct pkt packet)
     if (received[packet.seqnum] == false){
       received[packet.seqnum] = true;
       for ( i=0; i<20 ; i++ )
-        recvpkt[packet.seqnum].payload[i] = packet.payload[i];
+        received_pkt[packet.seqnum].payload[i] = packet.payload[i];
     }
 
     while (received[expectedseqnum]){
