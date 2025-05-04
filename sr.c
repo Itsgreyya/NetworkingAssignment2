@@ -120,17 +120,31 @@ void A_output(struct msg message)
 
 void A_input(struct pkt packet)
 {
+  int ackcount = 0
+  int i
+
   if (!IsCorrupted(packet)) {
     int acknum = packet.acknum;
 
     if (!acked[acknum]) {
-      acked[acknum] = true;
+      acked[acknum] = true; // prove ack is received
       if (TRACE > 0)
         printf("----A: ACK %d received and marked\n", acknum);
       total_ACKs_received++;
 
       //stop timer
-      send_times[acknum] = -1.0;
+    if(acknum == buffer[windowfirst].sequence){
+      while (windowcount > 0 && acked[buffer[windowfirst].seqnum])
+      {
+        windowfirst = (windowfirst + 1) % WINDOWSIZE;
+        windowcount--
+      }
+	    /* start timer again if there are still more unacked packets in window */
+      stoptimer(A);
+      if (windowcount > 0)
+        starttimer(A, RTT);
+    }
+    
     }
   } else {
     if (TRACE > 0)
@@ -142,20 +156,18 @@ void A_input(struct pkt packet)
 /* called when A's timer goes off */
 void A_timerinterrupt(void)
 {
-  int i;
 
   if (TRACE > 0)
     printf("----A: time out,resend packets!\n");
 
-  for(i=0; i<windowcount; i++) {
+// Only retransmit the specific packets that have timed out or at the very left.
+    
+  tolayer3(A,buffer[(windowfirst) % WINDOWSIZE]);
+  packets_resent++;
 
-    if (TRACE > 0)
-      printf ("---A: resending packet %d\n", (buffer[(windowfirst+i) % WINDOWSIZE]).seqnum);
+  if (windowcount > 0) 
+    starttimer(A,RTT);
 
-    tolayer3(A,buffer[(windowfirst+i) % WINDOWSIZE]);
-    packets_resent++;
-    if (i==0) starttimer(A,RTT);
-  }
 }
 
 
