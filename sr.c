@@ -141,8 +141,6 @@ void A_input(struct pkt packet)
       if (windowcount > 0 )
         starttimer(A, RTT);
     }
-    else if (TRACE > 0)
-      printf ("----A: duplicate ACK received, do nothing!\n");
   }
   else if (TRACE > 0)
     printf ("----A: corrupted ACK is received, do nothing!\n");
